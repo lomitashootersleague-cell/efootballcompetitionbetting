@@ -102,8 +102,18 @@ function AdminPage() {
 
   return (
     <Layout>
-      <main className="w-full min-h-[calc(100vh-3.5rem)]">
-        <div className={`mx-auto w-full ${activeTab === "analytics" ? "max-w-[1600px]" : "max-w-[1080px]"} px-3 sm:px-4 py-4 sm:py-6 space-y-4`}>
+      <main
+        className="relative w-full min-h-[calc(100vh-3.5rem)]"
+        style={{ background: "radial-gradient(120% 90% at 50% 0%, oklch(0.22 0.07 158) 0%, oklch(0.16 0.05 158) 40%, oklch(0.10 0.03 158) 100%)" }}
+      >
+        {/* Centered, faintly-visible league crest watermark behind the console */}
+        <img
+          src={lslLogo}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] max-w-[640px] object-contain opacity-[0.06] mix-blend-screen z-0"
+        />
+        <div className={`relative z-10 mx-auto w-full ${activeTab === "analytics" ? "max-w-[1600px]" : "max-w-[1080px]"} px-3 sm:px-4 py-4 sm:py-6 space-y-4`}>
           <div
             className="relative overflow-hidden rounded-2xl p-4 border border-primary/40 shadow-luxury bg-card"
             style={{ backgroundImage: `linear-gradient(90deg, rgba(8,14,10,0.95) 0%, rgba(8,14,10,0.78) 45%, rgba(8,14,10,0.25) 100%), url(${consoleHeaderBgAsset.url})`, backgroundSize: "cover", backgroundPosition: "center right" }}
