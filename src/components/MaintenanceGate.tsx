@@ -8,7 +8,7 @@ export function MaintenanceGate({ children }: { children: React.ReactNode }) {
   const [s, setS] = useState<{ on: boolean; msg: string; closed: boolean; closedMsg: string } | null>(null);
 
   useEffect(() => {
-    supabase.from("app_settings").select("maintenance_mode,maintenance_message,closed_mode,closed_message").eq("id", 1).maybeSingle()
+    (supabase as any).from("app_settings").select("maintenance_mode,maintenance_message,closed_mode,closed_message").eq("id", 1).maybeSingle()
       .then(({ data }: any) => setS({
         on: !!data?.maintenance_mode,
         msg: data?.maintenance_message ?? "We are performing maintenance.",
