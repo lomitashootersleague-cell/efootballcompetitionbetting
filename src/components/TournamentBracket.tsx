@@ -249,6 +249,21 @@ export function TournamentBracket({
 }
 
 function Side({ name, logo, win, score, dimmed }: { name?: string | null; logo?: string | null; win: boolean; score: number | null; dimmed: boolean }) {
+  return SideRow({ name, logo, win, score, dimmed });
+}
+
+function SeedBadge({ n, cy }: { n: number; cy: number }) {
+  return (
+    <div
+      className="absolute grid place-items-center rounded-[5px] border border-amber-400/45 bg-black/70 text-[11px] font-black tabular-nums text-amber-300"
+      style={{ left: 8, top: cy - 11, width: 24, height: 22 }}
+    >
+      {String(n).padStart(2, "0")}
+    </div>
+  );
+}
+
+function SideRow({ name, logo, win, score, dimmed }: { name?: string | null; logo?: string | null; win: boolean; score: number | null; dimmed: boolean }) {
   return (
     <div className={`flex items-center justify-between px-2.5 h-[29px] ${dimmed ? "opacity-40" : ""}`}>
       <span className="flex items-center gap-1.5 min-w-0">
