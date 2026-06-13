@@ -1647,6 +1647,43 @@ function FutureOddAdminCard({ odd, disabled, onOdd, onStatus, linkableMatches, o
         </div>
       </div>
       <Input className="h-8" type="number" step="0.01" value={Number(odd.value)} onChange={(e) => onOdd(odd.id, Number(e.target.value))} />
+      {!terminal && (
+        <div className="space-y-1 rounded-md border border-primary/15 bg-background/40 p-1.5">
+          <div className="text-[9px] uppercase tracking-wide text-muted-foreground">Link to a real match (auto-fills score)</div>
+          <div className="flex gap-1">
+            <Select value={odd.future_match_id ?? "none"} onValueChange={(v) => onLink(odd, v === "none" ? "" : v, side)}>
+              <SelectTrigger className="h-7 text-[10px]"><SelectValue placeholder="Pick match" /></SelectTrigger>
+              <SelectContent className="max-h-60">
+                <SelectItem value="none">— No linked match —</SelectItem>
+                {linkableMatches.map((m) => (
+                  <SelectItem key={m.id} value={m.id} className="text-[10px]">
+                    {m.name || `${m.home_team?.name ?? "?"} v ${m.away_team?.name ?? "?"}`}{m.home_score != null ? ` (${m.home_score}-${m.away_score})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={side} onValueChange={(v) => { setSide(v as "home" | "away"); if (odd.future_match_id) onLink(odd, odd.future_match_id, v as "home" | "away"); }}>
+              <SelectTrigger className="h-7 w-20 text-[10px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="home" className="text-[10px]">Home</SelectItem>
+                <SelectItem value="away" className="text-[10px]">Away</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {odd.future_match_id && (
+            <div className="flex items-center justify-between gap-1 pt-0.5">
+              <span className="text-[10px] text-muted-foreground truncate">
+                Live: <span className="text-primary font-bold">{odd.future_live_score ?? "0-0"}</span>
+                {odd.future_live_opponent ? ` vs ${odd.future_live_opponent}` : ""}
+                {odd.future_live_outcome && odd.future_live_outcome !== "pending" ? ` · ${odd.future_live_outcome.toUpperCase()}` : ""}
+              </span>
+              {!disabled && (
+                <button type="button" className="text-[9px] underline text-primary shrink-0" onClick={() => { if (odd.future_live_score) setScore(odd.future_live_score); if (odd.future_live_opponent) setOpponent(odd.future_live_opponent); }}>Use score</button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       {!terminal && !disabled && (
         <>
           <Input className="h-8" value={score} onChange={(e) => setScore(e.target.value)} placeholder={`Round ${currentRound} score e.g. 21-15`} />
