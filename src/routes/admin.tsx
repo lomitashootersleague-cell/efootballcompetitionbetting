@@ -787,6 +787,9 @@ function UserEditDialog({ user, roles, onClose }: { user: any; roles: string[]; 
               <FieldLuxe label="Discord">
                 <Input value={form.discord_username ?? ""} onChange={(e) => setForm({ ...form, discord_username: e.target.value })} />
               </FieldLuxe>
+              <FieldLuxe label="Discord full name">
+                <Input value={form.discord_full_name ?? ""} onChange={(e) => setForm({ ...form, discord_full_name: e.target.value })} />
+              </FieldLuxe>
               <FieldLuxe label="Country">
                 <Input value={form.country ?? ""} onChange={(e) => setForm({ ...form, country: e.target.value })} />
               </FieldLuxe>
