@@ -3039,7 +3039,7 @@ function AnalyticsPanel() {
           ))}
         </PanelBlock>
         <MiniLeaderboardPanel onOpen={() => setActiveTabFromAnalytics(nav, "leaderboard")} />
-        <TopBetsPanel />
+        <TopBetsPanel limit={3} />
       </div>
 
       {/* ROW 9 — 5 module tiles */}
