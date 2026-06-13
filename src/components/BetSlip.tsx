@@ -64,11 +64,12 @@ function BetSlipDrawer({ open, onClose }: { open: boolean; onClose: () => void }
   const [maxSelVirt, setMaxSelVirt] = useState(20);
   const [submitting, setSubmitting] = useState(false);
   const [placed, setPlaced] = useState<any>(null);
+  const [allowRebet, setAllowRebet] = useState(true);
   const confirm = useConfirm();
   const nav = useNavigate();
 
   useEffect(() => {
-    supabase.from("app_settings").select("min_stake,max_payout,virtual_min_stake,virtual_max_payout,max_selections_per_ticket,virtual_max_selections,futures_min_stake,futures_max_payout,futures_max_selections").eq("id", 1).maybeSingle()
+    supabase.from("app_settings").select("min_stake,max_payout,virtual_min_stake,virtual_max_payout,max_selections_per_ticket,virtual_max_selections,futures_min_stake,futures_max_payout,futures_max_selections,allow_rebet").eq("id", 1).maybeSingle()
       .then(({ data }) => {
         if (data?.min_stake) setRealMinStake(Number(data.min_stake));
         if ((data as any)?.max_payout) setRealMaxPayout(Number((data as any).max_payout));
@@ -79,6 +80,7 @@ function BetSlipDrawer({ open, onClose }: { open: boolean; onClose: () => void }
         if ((data as any)?.futures_min_stake) setFutureMinStake(Number((data as any).futures_min_stake));
         if ((data as any)?.futures_max_payout) setFutureMaxPayout(Number((data as any).futures_max_payout));
         if ((data as any)?.futures_max_selections) setFutureMaxSel(Number((data as any).futures_max_selections));
+        if (typeof (data as any)?.allow_rebet === "boolean") setAllowRebet((data as any).allow_rebet);
       });
   }, [open]);
 
@@ -200,7 +202,13 @@ function BetSlipDrawer({ open, onClose }: { open: boolean; onClose: () => void }
         </SheetHeader>
 
         {placed ? (
-          <PlacedPreview bet={placed} onView={() => { closeAll(); nav({ to: "/ticket/$id", params: { id: placed.id } }); }} onClose={closeAll} />
+          <PlacedPreview
+            bet={placed}
+            allowAgain={allowRebet}
+            onAgain={() => { setPlaced(null); onClose(); }}
+            onView={() => { closeAll(); nav({ to: "/ticket/$id", params: { id: placed.id } }); }}
+            onClose={closeAll}
+          />
         ) : (
         <div className="flex min-h-0 flex-col pb-[calc(env(safe-area-inset-bottom)+1rem)]">
         <div className="px-6 mt-4 space-y-3 max-h-none overflow-visible pr-4">
@@ -271,7 +279,7 @@ function BetSlipDrawer({ open, onClose }: { open: boolean; onClose: () => void }
   );
 }
 
-function PlacedPreview({ bet, onView, onClose }: { bet: any; onView: () => void; onClose: () => void }) {
+function PlacedPreview({ bet, onView, onClose, allowAgain, onAgain }: { bet: any; onView: () => void; onClose: () => void; allowAgain?: boolean; onAgain?: () => void }) {
   const sels = bet._selections ?? [];
   function copy(t: string) { navigator.clipboard.writeText(t); toast.success("Copied"); }
   async function share() {
@@ -321,6 +329,11 @@ function PlacedPreview({ bet, onView, onClose }: { bet: any; onView: () => void;
         <Button variant="outline" onClick={share}><Share2 className="h-4 w-4 mr-1" />Share</Button>
         <Button className="btn-luxury" onClick={onView}><ExternalLink className="h-4 w-4 mr-1" />View Ticket</Button>
       </div>
+      {allowAgain && onAgain && (
+        <Button className="w-full btn-luxury" onClick={onAgain}>
+          <Ticket className="h-4 w-4 mr-1" />Place another bet
+        </Button>
+      )}
       <Button variant="ghost" className="w-full" onClick={onClose}>Close</Button>
     </div>
   );
