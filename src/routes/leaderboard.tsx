@@ -65,6 +65,17 @@ function Page() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase.from("app_settings").select("leaderboard_header_url").eq("id", 1).maybeSingle();
+        if (active && !error) setHeaderUrl((data as any)?.leaderboard_header_url ?? null);
+      } catch { /* ignore */ }
+    })();
+    return () => { active = false; };
+  }, []);
+
   return (
     <Layout>
       <div className="container py-8 max-w-5xl">
