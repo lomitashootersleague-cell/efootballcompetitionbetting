@@ -254,6 +254,47 @@ function Side({ name, logo, win, score, dimmed, dq }: { name?: string | null; lo
   return SideRow({ name, logo, win, score, dimmed, dq });
 }
 
+/** Gold trophy flanked by laurel branches — matches the bracket reference art. */
+function ChampionTrophy() {
+  const leaf = (cx: number, cy: number, rot: number) => (
+    <ellipse cx={cx} cy={cy} rx="5.5" ry="3" fill="url(#laurelGold)" transform={`rotate(${rot} ${cx} ${cy})`} />
+  );
+  return (
+    <svg width="150" height="104" viewBox="0 0 150 104" fill="none" className="drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]">
+      <defs>
+        <linearGradient id="trophyGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fbe9a8" />
+          <stop offset="0.45" stopColor="#e8c45a" />
+          <stop offset="1" stopColor="#a9772a" />
+        </linearGradient>
+        <linearGradient id="laurelGold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#f0d27a" />
+          <stop offset="1" stopColor="#9c6e28" />
+        </linearGradient>
+      </defs>
+      {/* left laurel */}
+      <g>
+        <path d="M40 96 C24 84 18 64 22 44" stroke="url(#laurelGold)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        {leaf(22, 46, 50)}{leaf(20, 58, 35)}{leaf(22, 70, 20)}{leaf(28, 82, 5)}{leaf(36, 92, -10)}
+      </g>
+      {/* right laurel (mirrored) */}
+      <g transform="translate(150 0) scale(-1 1)">
+        <path d="M40 96 C24 84 18 64 22 44" stroke="url(#laurelGold)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        {leaf(22, 46, 50)}{leaf(20, 58, 35)}{leaf(22, 70, 20)}{leaf(28, 82, 5)}{leaf(36, 92, -10)}
+      </g>
+      {/* trophy cup */}
+      <path d="M52 20 H98 V34 C98 52 88 62 75 62 C62 62 52 52 52 34 Z" fill="url(#trophyGold)" stroke="#7a5418" strokeWidth="1" />
+      {/* handles */}
+      <path d="M52 24 C40 24 40 42 52 44" stroke="url(#trophyGold)" strokeWidth="4" fill="none" />
+      <path d="M98 24 C110 24 110 42 98 44" stroke="url(#trophyGold)" strokeWidth="4" fill="none" />
+      {/* stem + base */}
+      <rect x="71" y="62" width="8" height="12" fill="url(#trophyGold)" />
+      <rect x="60" y="74" width="30" height="6" rx="2" fill="url(#trophyGold)" />
+      <rect x="64" y="80" width="22" height="8" rx="2" fill="url(#trophyGold)" />
+    </svg>
+  );
+}
+
 function SeedBadge({ n, cy }: { n: number; cy: number }) {
   return (
     <div
