@@ -44,9 +44,6 @@ import {
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ActionConfirmDialog } from "@/components/ActionConfirmDialog";
 import { notifyAction, humanizeAction } from "@/lib/notify-action";
-
-// High-frequency admin actions that should not trigger a pop-out dialog.
-const SILENT_AUDIT_ACTIONS = new Set(["match_live_score", "match_presence"]);
 import { SpotlightsAdminPanel } from "@/components/Spotlight";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { ClansAdminPanel } from "@/components/admin/ClansAdminPanel";
@@ -55,6 +52,9 @@ import { TournamentAdminPanel } from "@/components/admin/TournamentAdminPanel";
 import { seedLegacyUsers } from "@/lib/seed-users.functions";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { loadStandings, type LbRow } from "@/lib/leaderboard";
+
+// High-frequency admin actions that should not trigger a pop-out dialog.
+const SILENT_AUDIT_ACTIONS = new Set(["match_live_score", "match_presence"]);
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — LSL" }, { name: "description", content: "League administration dashboard." }] }),
