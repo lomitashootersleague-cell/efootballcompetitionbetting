@@ -51,15 +51,22 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   useVirtualHeartbeat();
   useForceReloadBroadcast();
   const [railOpen, setRailOpen] = useState(false);
-  // Admin-configurable site-wide background (falls back to bundled nebula art).
+  // Admin-configurable site-wide background + branding (fall back to bundled art).
   const [siteBg, setSiteBg] = useState<string | null>(null);
+  const [bgFit, setBgFit] = useState<string>("cover");
+  const [bgPos, setBgPos] = useState<string>("center");
+  const [siteName, setSiteName] = useState<string | null>(null);
   useEffect(() => {
-    supabase.from("app_settings").select("site_bg_url").eq("id", 1).maybeSingle()
-      .then(({ data }) => setSiteBg((data as any)?.site_bg_url ?? null));
+    const apply = (d: any) => {
+      setSiteBg(d?.site_bg_url ?? null);
+      setBgFit(d?.site_bg_fit ?? "cover");
+      setBgPos(d?.site_bg_position ?? "center");
+      setSiteName(d?.site_name ?? null);
+    };
+    supabase.from("app_settings").select("site_bg_url,site_bg_fit,site_bg_position,site_name").eq("id", 1).maybeSingle()
+      .then(({ data }) => apply(data));
     const ch = supabase.channel("site-bg")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, (p: any) => {
-        setSiteBg(p.new?.site_bg_url ?? null);
-      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, (p: any) => apply(p.new))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
@@ -71,7 +78,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
           src={siteBg || lslPlatformBg.url}
           alt=""
           aria-hidden
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full"
+          style={{ objectFit: (bgFit as any) || "cover", objectPosition: bgPos || "center" }}
         />
         <div className="absolute inset-0 bg-background/40" />
       </div>
