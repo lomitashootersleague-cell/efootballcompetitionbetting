@@ -3514,6 +3514,13 @@ function SettingsPanel() {
 
       <SettingsSection icon={Sparkles} title="Brand" subtitle="Tagline shown across landing surfaces.">
         <FieldLuxe label="Hero tagline"><Input value={s.hero_tagline ?? ""} onChange={(e) => setS({ ...s, hero_tagline: e.target.value })} placeholder="Season 4 · Live" /></FieldLuxe>
+        <FieldLuxe label="Home headline (big colorful text — shown in CAPITALS)">
+          <Textarea rows={2} value={s.hero_title ?? ""} onChange={(e) => setS({ ...s, hero_title: e.target.value })} placeholder="Where gangs clash and legends are gold-plated." />
+        </FieldLuxe>
+        <FieldLuxe label="Home sub-text (small paragraph below the headline)">
+          <Textarea rows={3} value={s.hero_subtitle ?? ""} onChange={(e) => setS({ ...s, hero_subtitle: e.target.value })} placeholder="The Lomita Shooters League is a virtual-token competitive shooting circuit…" />
+        </FieldLuxe>
+        <p className="text-[10px] text-muted-foreground">Leave blank to keep the default styled headline. Custom headlines are automatically shown in gold capitals.</p>
       </SettingsSection>
 
       <SettingsSection icon={MessageSquare} title="Contact" subtitle="Public-facing contact channels.">
