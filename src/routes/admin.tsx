@@ -3189,6 +3189,8 @@ function AnalyticsPanel() {
             <button key={h.id} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-violet-500/10 rounded px-1 transition">
               {h.media_type === "video" ? <Play className="h-3 w-3 text-violet-400 shrink-0" /> : <ImageIcon className="h-3 w-3 text-violet-400 shrink-0" />}
               <div className="min-w-0 flex-1 truncate text-left">{h.title}</div>
+              <span className="flex items-center gap-0.5 text-emerald-300 shrink-0"><ThumbsUp className="h-3 w-3" />{h.likes ?? 0}</span>
+              <span className="flex items-center gap-0.5 text-destructive shrink-0"><ThumbsDown className="h-3 w-3" />{h.dislikes ?? 0}</span>
             </button>
           ))}
         </PanelBlock>
