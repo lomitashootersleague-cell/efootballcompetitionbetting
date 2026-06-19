@@ -190,7 +190,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 function SiteFooter() {
   const [s, setS] = useState<any>(null);
   const [open, setOpen] = useState<"terms" | "about" | null>(null);
-  useEffect(() => { supabase.from("app_settings").select("*").eq("id", 1).maybeSingle().then(({ data }) => setS(data)); }, []);
+  useEffect(() => {
+    supabase.from("app_settings")
+      .select("site_name,about_us,why_trust_us,terms_content,contact_email,contact_phone,contact_whatsapp")
+      .eq("id", 1).maybeSingle().then(({ data }) => setS(data));
+  }, []);
   return (
     <footer className="border-t border-border mt-20 backdrop-blur-xl bg-card/40 lg:pl-0 pl-16">
       <div className="container mx-auto px-4 py-10 grid md:grid-cols-3 gap-6 text-sm">
