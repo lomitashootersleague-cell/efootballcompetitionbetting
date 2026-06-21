@@ -219,39 +219,6 @@ function Index() {
         </div>
       </section>
 
-      {/* Fudged global community counter — golden 3D showcase below the matches feed. */}
-      <section className="container mt-12">
-        <div className="relative">
-          <div className="absolute -inset-4 rounded-[36px] bg-[radial-gradient(circle_at_30%_20%,oklch(0.92_0.2_92/0.25),transparent_60%),radial-gradient(circle_at_80%_80%,oklch(0.85_0.22_152/0.18),transparent_60%)] blur-3xl pointer-events-none" />
-          <Card className="count-3d relative overflow-hidden text-center p-8 md:p-12">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-gold" />
-            <div className="pointer-events-none absolute inset-0 opacity-[0.07] grid place-items-center">
-              <Skull className="h-40 w-40" />
-            </div>
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                </span>
-                <span className="text-[10px] md:text-xs uppercase tracking-[0.32em] font-bold text-primary">The League is growing</span>
-              </div>
-              <div className="mt-4 count-foil font-display text-6xl md:text-8xl font-black tabular-nums leading-none">
-                {fudgedUsers.toLocaleString()}+
-              </div>
-              <div className="mt-3 text-sm md:text-lg text-foreground/80 font-bold uppercase tracking-[0.3em]">
-                Shooters worldwide
-              </div>
-              <div className="mt-4 flex items-center justify-center gap-2 text-amber-300/80">
-                <span className="h-px w-10 bg-gradient-to-r from-transparent to-amber-400/60" />
-                <Trophy className="h-4 w-4" />
-                <span className="h-px w-10 bg-gradient-to-l from-transparent to-amber-400/60" />
-              </div>
-            </div>
-          </Card>
-        </div>
-      </section>
-
     </Layout>
   );
 }
@@ -265,7 +232,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FuturesSection({ title, markets, maxSelections }: { title: string; markets: MatchRow[]; maxSelections: number }) {
+function FuturesSection({ title, markets, maxSelections, featured = [] }: { title: string; markets: MatchRow[]; maxSelections: number; featured?: MatchRow[] }) {
   const { selections, add, remove, setOpen } = useBetSlip();
   return (
     <section className="container mt-10">
@@ -292,6 +259,9 @@ function FuturesSection({ title, markets, maxSelections }: { title: string; mark
             </Button>
           </Link>
         </div>
+        {featured.length > 0 && (
+          <FeaturedGoldenMatches matches={featured} />
+        )}
       </div>
       {markets.length === 0 && (
         <Card className="glass-strong p-5 border-accent/30">
