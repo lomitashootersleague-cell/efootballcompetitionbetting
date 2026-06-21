@@ -16,6 +16,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from "embla-carousel-autoplay";
 import { Crosshair, Flame, Trophy, ChevronRight, Skull, Coins, Ticket as TicketIcon, ClipboardPaste, X } from "lucide-react";
 import { Countdown } from "@/components/Countdown";
+import { TeamLogo } from "@/components/TeamLogo";
 import hero from "@/assets/hero.jpg";
 import { fetchMatches, fetchSettings, type MatchRow } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,12 +49,9 @@ function Index() {
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [userCount, setUserCount] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([fetchMatches(), fetchSettings()]).then(([m, s]) => { setMatches(m); setSettings(s); }).finally(() => setLoading(false));
-    supabase.from("profiles").select("id", { count: "exact", head: true })
-      .then(({ count }) => setUserCount(count ?? 0));
     // Debounce refetches so a burst of realtime row changes (odds/markets
     // updating together) only triggers one network round-trip, not dozens.
     let matchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -92,8 +90,6 @@ function Index() {
   }
   const categoryGroups = Object.entries(byCategory);
   const tagline = settings?.hero_tagline || "Season 4 · Live";
-  // Fudged community size — always reads "500+" at minimum, never an exact figure.
-  const fudgedUsers = (userCount ?? 0) + 500;
 
   return (
     <Layout>
@@ -149,7 +145,7 @@ function Index() {
       <HighlightsRow />
       <AnnouncementSlider />
       <AdsRow />
-      <FuturesSection title={settings?.futures_section_title || "TOURNAMENT FUTURES"} markets={futures} maxSelections={Number(settings?.futures_max_selections ?? 1)} />
+      <FuturesSection title={settings?.futures_section_title || "TOURNAMENT FUTURES"} markets={futures} maxSelections={Number(settings?.futures_max_selections ?? 1)} featured={featuredAll} />
 
       <BookingCodeFab />
 
@@ -224,39 +220,6 @@ function Index() {
         </div>
       </section>
 
-      {/* Fudged global community counter — golden 3D showcase below the matches feed. */}
-      <section className="container mt-12">
-        <div className="relative">
-          <div className="absolute -inset-4 rounded-[36px] bg-[radial-gradient(circle_at_30%_20%,oklch(0.92_0.2_92/0.25),transparent_60%),radial-gradient(circle_at_80%_80%,oklch(0.85_0.22_152/0.18),transparent_60%)] blur-3xl pointer-events-none" />
-          <Card className="count-3d relative overflow-hidden text-center p-8 md:p-12">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-gold" />
-            <div className="pointer-events-none absolute inset-0 opacity-[0.07] grid place-items-center">
-              <Skull className="h-40 w-40" />
-            </div>
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                </span>
-                <span className="text-[10px] md:text-xs uppercase tracking-[0.32em] font-bold text-primary">The League is growing</span>
-              </div>
-              <div className="mt-4 count-foil font-display text-6xl md:text-8xl font-black tabular-nums leading-none">
-                {fudgedUsers.toLocaleString()}+
-              </div>
-              <div className="mt-3 text-sm md:text-lg text-foreground/80 font-bold uppercase tracking-[0.3em]">
-                Shooters worldwide
-              </div>
-              <div className="mt-4 flex items-center justify-center gap-2 text-amber-300/80">
-                <span className="h-px w-10 bg-gradient-to-r from-transparent to-amber-400/60" />
-                <Trophy className="h-4 w-4" />
-                <span className="h-px w-10 bg-gradient-to-l from-transparent to-amber-400/60" />
-              </div>
-            </div>
-          </Card>
-        </div>
-      </section>
-
     </Layout>
   );
 }
@@ -270,7 +233,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FuturesSection({ title, markets, maxSelections }: { title: string; markets: MatchRow[]; maxSelections: number }) {
+function FuturesSection({ title, markets, maxSelections, featured = [] }: { title: string; markets: MatchRow[]; maxSelections: number; featured?: MatchRow[] }) {
   const { selections, add, remove, setOpen } = useBetSlip();
   return (
     <section className="container mt-10">
@@ -297,6 +260,9 @@ function FuturesSection({ title, markets, maxSelections }: { title: string; mark
             </Button>
           </Link>
         </div>
+        {featured.length > 0 && (
+          <FeaturedGoldenMatches matches={featured} />
+        )}
       </div>
       {markets.length === 0 && (
         <Card className="glass-strong p-5 border-accent/30">
@@ -367,6 +333,75 @@ function FutureEmblem({ label, url }: { label: string; url?: string | null }) {
     <span className="h-10 w-10 shrink-0 rounded-full border border-primary/35 bg-primary/10 grid place-items-center overflow-hidden text-[11px] font-black text-primary">
       {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : initials}
     </span>
+  );
+}
+
+// Featured matches rendered as SportyBet-style golden rows inside the
+// Seasonal Tournament banner, under the "Go to Tournament" header.
+function FeaturedGoldenMatches({ matches }: { matches: MatchRow[] }) {
+  const { selections, add, remove, setOpen } = useBetSlip();
+  if (matches.length === 0) return null;
+  return (
+    <div className="relative mt-5 space-y-2.5">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-black text-amber-100">
+        <Flame className="h-3.5 w-3.5" /> Featured Matches
+      </div>
+      {matches.map((m) => {
+        const market = m.markets?.find((mk) => mk.is_open) ?? m.markets?.[0];
+        const odds = market?.odds ?? [];
+        const live = m.status === "live";
+        return (
+          <div key={m.id} className="rounded-2xl border border-amber-300/30 bg-black/35 backdrop-blur-sm overflow-hidden shadow-[0_8px_30px_-12px_rgba(0,0,0,0.7)]">
+            <div className="flex items-center justify-between gap-2 px-3 pt-2.5 text-[10px] uppercase tracking-widest">
+              <span className="inline-flex items-center gap-1.5 font-black text-amber-200">
+                {live ? (
+                  <><span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" /></span> Live</>
+                ) : "Upcoming"}
+              </span>
+              <span className="font-mono text-amber-50/70">
+                {live ? "Round in play" : <>Starts in <Countdown target={m.start_time} /></>}
+              </span>
+            </div>
+            <Link to="/matches/$matchId" params={{ matchId: m.id }} className="flex items-center gap-3 px-3 py-2 hover:bg-amber-400/5 transition">
+              <TeamLogo name={m.home_team?.name} url={m.home_team?.logo_url} size={30} rounded="full" />
+              <div className="min-w-0 flex-1">
+                <div className="font-extrabold text-sm text-amber-50 leading-tight truncate uppercase">
+                  {m.home_team?.name ?? m.name}
+                  {m.away_team && <span className="text-amber-100/50 font-normal lowercase"> vs </span>}
+                  {m.away_team?.name}
+                </div>
+                <div className="text-[10px] text-amber-100/60 truncate">{market?.name ?? "Match winner"}</div>
+              </div>
+              {m.away_team && <TeamLogo name={m.away_team?.name} url={m.away_team?.logo_url} size={30} rounded="full" />}
+            </Link>
+            {odds.length > 0 && (
+              <div className="grid gap-px px-3 pb-3" style={{ gridTemplateColumns: `repeat(${Math.min(odds.length, 3)}, minmax(0,1fr))` }}>
+                {odds.slice(0, 3).map((o) => {
+                  const selected = selections.some((s) => s.odd_id === o.id);
+                  const blocked = !market?.is_open || m.status === "ended";
+                  return (
+                    <button
+                      key={o.id}
+                      disabled={blocked && !selected}
+                      onClick={() => {
+                        if (selected) { remove(o.id); return; }
+                        if (blocked) return;
+                        add({ match_id: m.id, match_name: m.name, market_id: market!.id, market_name: market!.name, odd_id: o.id, selection_label: o.label, odds: Number(o.value) });
+                        setOpen(true);
+                      }}
+                      className={`flex flex-col items-center justify-center gap-0.5 rounded-lg bg-black/40 py-2 px-1 transition hover:bg-amber-400/15 disabled:opacity-40 disabled:hover:bg-black/40 ${selected ? "ring-2 ring-amber-300 bg-amber-400/20" : "border border-amber-300/15"}`}
+                    >
+                      <span className="text-[9px] uppercase tracking-wider text-amber-100/70 truncate max-w-full">{o.label}</span>
+                      <span className="font-mono font-black text-amber-200">{Number(o.value).toFixed(2)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
