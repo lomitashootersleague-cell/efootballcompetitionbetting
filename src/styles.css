@@ -508,6 +508,31 @@
     backdrop-filter: blur(18px) saturate(150%);
   }
 
+  /* Curved edges & borderlines across the entire admin console */
+  .admin-console-page .rounded-xl,
+  .admin-console-page .rounded-2xl,
+  .admin-console-page [class*="bg-card"],
+  .admin-console-page .glass,
+  .admin-console-page .glass-strong,
+  .admin-console-page .glass-ice,
+  .admin-console-page .admin-hero-frame,
+  .admin-console-page table,
+  .admin-console-page [role="tablist"],
+  .admin-console-page .border {
+    border-radius: 18px !important;
+  }
+  .admin-console-page input,
+  .admin-console-page textarea,
+  .admin-console-page select,
+  .admin-console-page [role="combobox"],
+  .admin-console-page button {
+    border-radius: 14px !important;
+  }
+  .admin-console-page button.rounded-full,
+  .admin-console-page .rounded-full {
+    border-radius: 9999px !important;
+  }
+
   /* Unblurred mode — strip the frosted-glass blur so admins can verify
      sensitive-data alignment & layout against a clean, solid surface. */
   .admin-console-page.admin-unblurred .admin-hero-frame,
