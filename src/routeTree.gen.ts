@@ -32,6 +32,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as GangsRouteImport } from './routes/gangs'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ChatRouteImport } from './routes/chat'
@@ -161,6 +162,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -236,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/gangs': typeof GangsRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -353,6 +362,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/checkout'
     | '/dashboard'
+    | '/faq'
     | '/forgot-password'
     | '/gangs'
     | '/leaderboard'
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/checkout'
     | '/dashboard'
+    | '/faq'
     | '/forgot-password'
     | '/gangs'
     | '/leaderboard'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/checkout'
     | '/dashboard'
+    | '/faq'
     | '/forgot-password'
     | '/gangs'
     | '/leaderboard'
@@ -468,6 +480,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   CheckoutRoute: typeof CheckoutRoute
   DashboardRoute: typeof DashboardRoute
+  FaqRoute: typeof FaqRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GangsRoute: typeof GangsRoute
   LeaderboardRoute: typeof LeaderboardRoute
@@ -659,6 +672,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -784,6 +804,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   CheckoutRoute: CheckoutRoute,
   DashboardRoute: DashboardRoute,
+  FaqRoute: FaqRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   GangsRoute: GangsRoute,
   LeaderboardRoute: LeaderboardRoute,
