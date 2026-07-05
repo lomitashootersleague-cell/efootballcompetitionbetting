@@ -120,13 +120,6 @@ export function ReferralCard() {
 /* ============================ VIP CARD ============================ */
 export function VipCard() {
   const { profile } = useAuth();
-  const [xpRules, setXpRules] = useState<{ bet: number; win: number; login: number; referral: number } | null>(null);
-  useEffect(() => {
-    supabase.from("app_settings").select("xp_per_bet,xp_per_win,xp_per_login,xp_per_referral").eq("id", 1).maybeSingle()
-      .then(({ data }) => {
-        if (data) setXpRules({ bet: data.xp_per_bet ?? 10, win: data.xp_per_win ?? 25, login: data.xp_per_login ?? 5, referral: data.xp_per_referral ?? 100 });
-      });
-  }, []);
   if (!profile) return null;
   const tier = (profile.vip_tier as string) ?? "bronze";
   const meta = TIER_META[tier] ?? TIER_META.bronze;
