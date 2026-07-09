@@ -32,7 +32,7 @@ function SupportPage() {
   const [discordUrl, setDiscordUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from("app_settings").select("discord_support_url").eq("id", 1).maybeSingle()
+    (supabase as any).from("app_settings").select("discord_support_url").eq("id", 1).maybeSingle()
       .then(({ data }) => setDiscordUrl((data as any)?.discord_support_url ?? null));
   }, []);
 
