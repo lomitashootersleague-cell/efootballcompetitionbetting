@@ -134,21 +134,36 @@ function LotteryPage() {
 }
 
 function DrawCard({ draw, minStake, maxStake, onDone }: { draw: any; minStake: number; maxStake: number; onDone: () => void }) {
-  const [picked, setPicked] = useState<number | null>(null);
+  const picksNeeded = Math.max(1, Math.min(5, Number(draw.picks_count ?? 1)));
+  const [picked, setPicked] = useState<number[]>([]);
   const [stake, setStake] = useState(minStake);
   const [submitting, setSubmitting] = useState(false);
   const numbers = Array.from({ length: draw.number_max + 1 }, (_, i) => i);
 
+  function toggle(n: number) {
+    setPicked((cur) => {
+      if (cur.includes(n)) return cur.filter((x) => x !== n);
+      if (cur.length >= picksNeeded) {
+        toast.error(`Pick exactly ${picksNeeded} number${picksNeeded === 1 ? "" : "s"}`);
+        return cur;
+      }
+      return [...cur, n];
+    });
+  }
+
   async function play() {
-    if (picked === null) return toast.error("Pick a number first");
+    if (picked.length !== picksNeeded) return toast.error(`Pick exactly ${picksNeeded} number${picksNeeded === 1 ? "" : "s"}`);
     if (stake < minStake) return toast.error(`Minimum stake is ${minStake.toLocaleString()}`);
     if (stake > maxStake) return toast.error(`Maximum stake is ${maxStake.toLocaleString()}`);
     setSubmitting(true);
-    const { error } = await (supabase.rpc as any)("place_lottery_ticket", { _draw_id: draw.id, _number: picked, _stake: stake });
+    const sorted = [...picked].sort((a, b) => a - b);
+    const { error } = picksNeeded === 1
+      ? await (supabase.rpc as any)("place_lottery_ticket", { _draw_id: draw.id, _number: sorted[0], _stake: stake })
+      : await (supabase.rpc as any)("place_lottery_ticket_multi", { _draw_id: draw.id, _numbers: sorted, _stake: stake });
     setSubmitting(false);
     if (error) return toast.error(error.message);
-    toast.success(`Ticket placed on ${picked}! Win x${draw.multiplier} if it's drawn.`);
-    setPicked(null);
+    toast.success(`Ticket placed on ${sorted.join(", ")}! Win x${draw.multiplier} if drawn.`);
+    setPicked([]);
     onDone();
   }
 
@@ -158,13 +173,13 @@ function DrawCard({ draw, minStake, maxStake, onDone }: { draw: any; minStake: n
         <div className="font-bold">{draw.title}</div>
         <Badge variant="outline" className="border-amber-500/50 text-amber-300">x{draw.multiplier}</Badge>
       </div>
-      <div className="text-xs text-muted-foreground mb-3">Pick a number from 0 to {draw.number_max}</div>
+      <div className="text-xs text-muted-foreground mb-3">Pick <span className="text-primary font-bold">{picksNeeded}</span> number{picksNeeded === 1 ? "" : "s"} from 0 to {draw.number_max} <span className="text-primary">({picked.length}/{picksNeeded} selected)</span></div>
       <div className="flex flex-wrap gap-2 mb-4">
         {numbers.map((n) => (
           <button
             key={n}
-            onClick={() => setPicked(n)}
-            className={`h-11 w-11 rounded-xl font-bold border transition ${picked === n ? "bg-gradient-gold text-background border-primary shadow-gold scale-105" : "border-border text-foreground hover:border-primary/60"}`}
+            onClick={() => toggle(n)}
+            className={`h-11 w-11 rounded-xl font-bold border transition ${picked.includes(n) ? "bg-gradient-gold text-background border-primary shadow-gold scale-105" : "border-border text-foreground hover:border-primary/60"}`}
           >{n}</button>
         ))}
       </div>
