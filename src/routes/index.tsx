@@ -199,24 +199,24 @@ function Index() {
           {!loading && live.length > 0 && (
             <div>
               <SectionHeader icon={Flame} title="Live Now" subtitle="Live odds. Markets close round-by-round." />
-              <div className="grid xl:grid-cols-2 gap-4 mt-4">
-                {live.map((m) => <MatchCardLive key={m.id} match={m} />)}
+              <div className="space-y-2 mt-4">
+                {live.map((m) => <MatchCardLive key={m.id} match={m} variant="row" />)}
               </div>
             </div>
           )}
           {!loading && upcoming.length > 0 && (
             <div>
               <SectionHeader icon={Crosshair} title="Upcoming Matches" subtitle="Lock your picks before the round starts." />
-              <div className="grid xl:grid-cols-2 gap-4 mt-4">
-                {upcoming.slice(0, 6).map((m) => <MatchCardLive key={m.id} match={m} />)}
+              <div className="space-y-2 mt-4">
+                {upcoming.slice(0, 6).map((m) => <MatchCardLive key={m.id} match={m} variant="row" />)}
               </div>
             </div>
           )}
           {categoryGroups.map(([id, g]) => (
             <div key={id}>
               <SectionHeader icon={Crosshair} title={g.name} subtitle={`${g.items.length} match${g.items.length === 1 ? "" : "es"} in this category.`} />
-              <div className="grid xl:grid-cols-2 gap-4 mt-4">
-                {g.items.map((m) => <MatchCardLive key={m.id} match={m} />)}
+              <div className="space-y-2 mt-4">
+                {g.items.map((m) => <MatchCardLive key={m.id} match={m} variant="row" />)}
               </div>
             </div>
           ))}
