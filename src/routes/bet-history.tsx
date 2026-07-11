@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Ticket as TicketIcon, ChevronRight, ArrowLeft, History as HistoryIcon, Dice5, Coins, Disc3, Gamepad2 } from "lucide-react";
 
 export const Route = createFileRoute("/bet-history")({
@@ -27,6 +28,7 @@ function BetHistoryPage() {
   const [arcade, setArcade] = useState<any[]>([]);
   const [betFilter, setBetFilter] = useState<string>("all");
   const [betSearch, setBetSearch] = useState("");
+  const [selectedLottery, setSelectedLottery] = useState<any | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -35,7 +37,7 @@ function BetHistoryPage() {
       .eq("user_id", user.id).order("created_at", { ascending: false })
       .then(({ data }) => setBets(data ?? []));
     const loadLottery = () => (supabase as any).from("lottery_tickets")
-      .select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200)
+      .select("*, lottery_draws(title,winning_number,winning_numbers,multiplier,drawn_at,status,number_max)").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200)
       .then(({ data }: any) => setLottery(data ?? []));
     const loadArcade = () => (supabase as any).from("casino_plays")
       .select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200)
