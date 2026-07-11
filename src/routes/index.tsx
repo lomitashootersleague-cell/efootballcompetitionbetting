@@ -165,9 +165,9 @@ function Index() {
       {/* Match feed on the left · Hot Bets + Hall of Fame stacked on the right.
           The two-column layout kicks in from ~560px so phones in desktop mode
           keep the sidebar (Hot Bets + Hall of Fame) on the right, scaled small. */}
-      <section className="container mt-10">
+      <section className="container mt-6">
         <div className="grid gap-3 min-[560px]:gap-5 min-[560px]:grid-cols-[minmax(0,1fr)_minmax(0,200px)] lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px] items-start">
-          <div className="space-y-10 min-w-0">
+          <div className="space-y-6 min-w-0">
           {loading && <p className="text-muted-foreground">Loading league…</p>}
           {!loading && featuredFallback.length > 0 && (
             <div>
