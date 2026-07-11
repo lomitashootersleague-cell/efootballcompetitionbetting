@@ -2041,6 +2041,19 @@ function MatchWizard({ onClose }: { onClose: () => void }) {
             </div>
             <Input placeholder="Location / Venue" value={details.location} onChange={(e) => setDetails({ ...details, location: e.target.value })} />
             <label className="flex items-center gap-2 text-sm"><Switch checked={details.featured} onCheckedChange={(v) => setDetails({ ...details, featured: v })} /> Publish on homepage as Featured</label>
+            {details.featured && (
+              <ImageSettingControl
+                label="Featured match image (optional)"
+                value={details.featured_image_url}
+                onChange={(url) => setDetails({ ...details, featured_image_url: url })}
+                fit={details.featured_image_fit}
+                onFitChange={(v) => setDetails({ ...details, featured_image_fit: v })}
+                position={details.featured_image_position}
+                onPositionChange={(v) => setDetails({ ...details, featured_image_position: v })}
+                aspect="16 / 9"
+                help="Shown as the backdrop of this specific match in the home page Featured section (when no Seasonal Tournament is active)."
+              />
+            )}
             <div className="grid grid-cols-2 gap-2">
               <label className="flex items-center gap-2 rounded-lg border border-primary/20 bg-card/60 p-3 text-sm"><Switch checked={details.homePresent} onCheckedChange={(v) => setDetails({ ...details, homePresent: v })} /> Home team present (counts on Leaderboard)</label>
               <label className="flex items-center gap-2 rounded-lg border border-primary/20 bg-card/60 p-3 text-sm"><Switch checked={details.awayPresent} onCheckedChange={(v) => setDetails({ ...details, awayPresent: v })} /> Away team present (counts on Leaderboard)</label>
