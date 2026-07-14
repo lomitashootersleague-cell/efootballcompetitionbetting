@@ -99,8 +99,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "manifest", href: "/manifest.json" },
-      { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
-      { rel: "apple-touch-icon", href: "/icon.svg" },
+      { rel: "icon", href: "/icon-512.png?v=ecb2", type: "image/png", sizes: "512x512" },
+      { rel: "icon", href: "/icon-192.png?v=ecb2", type: "image/png", sizes: "192x192" },
+      { rel: "shortcut icon", href: "/favicon.ico?v=ecb2" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=ecb2", sizes: "180x180" },
     ],
     scripts: [
       {
@@ -160,6 +162,8 @@ import { PopupAd } from "@/components/PopupAd";
 import { CookieConsent } from "@/components/CookieConsent";
 import { BetSlipFab } from "@/components/BetSlip";
 import { RouteProgress } from "@/components/RouteProgress";
+import { PushPermissionPrompt } from "@/components/PushPermissionPrompt";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { useBranding } from "@/lib/branding";
 import { useEffect } from "react";
 import { trackPageView } from "@/lib/analytics";
@@ -222,6 +226,8 @@ function RootComponent() {
             <BetSlipFab />
             <RouteProgress />
             <CookieConsent />
+            <PushPermissionPrompt />
+            <PWAInstallPrompt />
             <Toaster />
           </ConfirmProvider>
         </BetSlipProvider>
