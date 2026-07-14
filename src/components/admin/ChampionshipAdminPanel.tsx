@@ -27,6 +27,7 @@ type Tournament = {
 export function ChampionshipAdminPanel() {
   const [enabled, setEnabled] = useState(false);
   const [footballEnabled, setFootballEnabled] = useState(false);
+  const [footballInstantEnabled, setFootballInstantEnabled] = useState(false);
   const [autoRestart, setAutoRestart] = useState(true);
   const [kind, setKind] = useState<"championship_virtual" | "championship_football">("championship_virtual");
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -34,23 +35,30 @@ export function ChampionshipAdminPanel() {
   const [startsAt, setStartsAt] = useState("");
   const [gap, setGap] = useState(20);
   const [saving, setSaving] = useState(false);
+  const [footballTeamCount, setFootballTeamCount] = useState<number>(0);
+  const [genericTeamCount, setGenericTeamCount] = useState<number>(0);
 
   const sb = supabase as any;
 
   async function load() {
-    const [{ data: s }, { data: ts }] = await Promise.all([
-      sb.from("app_settings").select("virtual_championship_enabled,virtual_championship_football_enabled,virtual_championship_auto_restart").eq("id", 1).maybeSingle(),
+    const [{ data: s }, { data: ts }, { count: fbCount }, { count: gnCount }] = await Promise.all([
+      sb.from("app_settings").select("virtual_championship_enabled,virtual_championship_football_enabled,virtual_championship_auto_restart,virtual_football_instant_enabled").eq("id", 1).maybeSingle(),
       sb
         .from("tournaments")
         .select("id,name,starts_at,status,current_stage,stage_gap_seconds,bracket_size")
         .in("kind", ["championship_virtual","championship_football"])
         .order("starts_at", { ascending: false })
         .limit(20),
+      sb.from("teams").select("id", { count: "exact", head: true }).eq("sport", "football"),
+      sb.from("teams").select("id", { count: "exact", head: true }).or("sport.eq.generic,sport.is.null"),
     ]);
     setEnabled(!!s?.virtual_championship_enabled);
     setFootballEnabled(!!s?.virtual_championship_football_enabled);
+    setFootballInstantEnabled(!!s?.virtual_football_instant_enabled);
     setAutoRestart(s?.virtual_championship_auto_restart ?? true);
     setTournaments((ts ?? []) as Tournament[]);
+    setFootballTeamCount(fbCount ?? 0);
+    setGenericTeamCount(gnCount ?? 0);
   }
 
   useEffect(() => { load(); }, []);
@@ -60,6 +68,20 @@ export function ChampionshipAdminPanel() {
     const { error } = await sb.from("app_settings").update({ [col]: v }).eq("id", 1);
     if (error) { toast.error(error.message); return; }
     toast.success(`${label} ${v ? "on" : "off"}`);
+  }
+
+  async function autoTagFootballTeams() {
+    if (genericTeamCount < 16) {
+      toast.error("Need at least 16 teams total to auto-tag");
+      return;
+    }
+    const { data: picks } = await sb.from("teams").select("id").or("sport.eq.generic,sport.is.null").limit(16);
+    const ids = (picks ?? []).map((p: any) => p.id);
+    if (ids.length === 0) return;
+    const { error } = await sb.from("teams").update({ sport: "football" }).in("id", ids);
+    if (error) return toast.error(error.message);
+    toast.success(`Tagged ${ids.length} teams as football`);
+    load();
   }
 
   async function schedule() {
@@ -141,6 +163,31 @@ export function ChampionshipAdminPanel() {
             <div className="text-xs text-muted-foreground">When a tournament ends, immediately reshuffle 16 random teams from the same sport pool and start a new one.</div>
           </div>
           <Switch checked={autoRestart} onCheckedChange={(v) => toggleFlag("virtual_championship_auto_restart", v, setAutoRestart, "Auto-restart")} />
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5">
+          <div>
+            <div className="font-black text-sm">Instant E-Football (per-user shootouts)</div>
+            <div className="text-xs text-muted-foreground">
+              Opens the /virtual/football-instant arena. Each user's penalty shootout starts privately when they place their bet.
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={footballInstantEnabled ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10" : "border-muted/50 text-muted-foreground bg-muted/20"}>
+              {footballInstantEnabled ? "Open" : "Closed"}
+            </Badge>
+            <Switch checked={footballInstantEnabled} onCheckedChange={(v) => toggleFlag("virtual_football_instant_enabled", v, setFootballInstantEnabled, "Instant E-Football")} />
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg border border-primary/20 bg-background/40 text-xs">
+          <div>
+            <div className="font-bold">Football team pool: <span className={footballTeamCount >= 16 ? "text-emerald-300" : "text-destructive"}>{footballTeamCount}</span></div>
+            <div className="text-muted-foreground">Need at least 16 football-tagged teams for the football cup and instant shootouts. Tag teams in Clans admin or use quick-tag.</div>
+          </div>
+          {footballTeamCount < 16 && (
+            <Button size="sm" variant="outline" onClick={autoTagFootballTeams} disabled={genericTeamCount < 16}>
+              Auto-tag 16 teams as football
+            </Button>
+          )}
         </div>
       </Card>
 
