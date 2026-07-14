@@ -303,11 +303,3 @@ function MatchupCard({
     </Card>
   );
 }
-        <span className="truncate max-w-[35%] text-red-200 drop-shadow">{nameA}</span>
-        <span className="text-amber-300 tabular-nums text-lg drop-shadow">{scoreA} – {scoreB}</span>
-        <span className="truncate max-w-[35%] text-sky-200 text-right drop-shadow">{nameB}</span>
-      </div>
-      {live && <div className="absolute top-1 left-1 text-[9px] uppercase tracking-widest bg-emerald-500/40 text-emerald-100 px-1.5 rounded">⚽ LIVE</div>}
-    </div>
-  );
-}
