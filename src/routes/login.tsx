@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Layout } from "@/components/Layout";
 import { ShieldAlert } from "lucide-react";
+import gangsterAsset from "@/assets/auth-gangster.jpg.asset.json";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -52,34 +53,71 @@ function LoginPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-16 max-w-md">
-        {banned && (
-          <Card className="mb-6 p-5 backdrop-blur-2xl bg-destructive/10 border-destructive/40">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-full bg-destructive/20 grid place-items-center shrink-0">
-                <ShieldAlert className="h-5 w-5 text-destructive" />
+      <div className="min-h-[calc(100vh-4rem)] grid grid-cols-1 md:grid-cols-2 bg-background">
+        {/* LEFT — cinematic gangster panel */}
+        <div className="relative hidden md:block overflow-hidden">
+          <img
+            src={gangsterAsset.url}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-background" />
+          <div className="relative z-10 h-full flex flex-col justify-between p-10">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center shadow-gold">
+                <span className="font-black text-background">L</span>
               </div>
-              <div className="min-w-0">
-                <h2 className="font-bold text-destructive">Your account has been banned</h2>
-                <p className="text-xs text-muted-foreground mt-1">You can submit an appeal to our moderation team for review.</p>
-                <Link to="/support" className="inline-block mt-3 text-xs px-3 py-1.5 rounded-md bg-destructive/20 text-destructive border border-destructive/40 hover:bg-destructive/30 transition">Submit Appeal →</Link>
+              <div className="leading-tight">
+                <div className="font-black tracking-wide">LOMITA SHOOTERS</div>
+                <div className="text-[10px] uppercase tracking-[0.35em] text-primary/80">League</div>
               </div>
             </div>
-          </Card>
-        )}
-        <Card className="p-8 backdrop-blur-xl bg-card/60 border-primary/30">
-          <h1 className="text-3xl font-bold text-primary mb-1">Sign In</h1>
-          <p className="text-sm text-muted-foreground mb-6">Enter the arena</p>
-          <form onSubmit={submit} className="space-y-4">
-            <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-            <div><Label>Password</Label><Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-            <Button type="submit" disabled={loading} className="w-full">{loading ? "Signing in..." : "Sign In"}</Button>
-          </form>
-          <div className="mt-4 flex justify-between text-sm">
-            <Link to="/register" className="text-primary hover:underline">Create account</Link>
-            <Link to="/forgot-password" className="text-muted-foreground hover:underline">Forgot password?</Link>
+            <div className="max-w-sm">
+              <h2 className="font-display text-4xl font-black leading-tight">
+                Private. <span className="gradient-gold-text">Premium.</span> Yours.
+              </h2>
+              <p className="text-sm text-muted-foreground mt-3">
+                High-stakes shootouts, live gang leagues, and premium virtual arenas — built for the discerning bettor.
+              </p>
+            </div>
           </div>
-        </Card>
+        </div>
+
+        {/* RIGHT — sign-in card */}
+        <div className="flex items-center justify-center p-6 sm:p-10">
+          <div className="w-full max-w-md">
+            {banned && (
+              <Card className="mb-6 p-5 backdrop-blur-2xl bg-destructive/10 border-destructive/40">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-destructive/20 grid place-items-center shrink-0">
+                    <ShieldAlert className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="font-bold text-destructive">Your account has been banned</h2>
+                    <p className="text-xs text-muted-foreground mt-1">You can submit an appeal to our moderation team for review.</p>
+                    <Link to="/support" className="inline-block mt-3 text-xs px-3 py-1.5 rounded-md bg-destructive/20 text-destructive border border-destructive/40 hover:bg-destructive/30 transition">Submit Appeal →</Link>
+                  </div>
+                </div>
+              </Card>
+            )}
+            <div className="mb-6">
+              <h1 className="font-display text-4xl font-black gradient-gold-text">Welcome back</h1>
+              <p className="text-sm text-muted-foreground mt-1">Sign in to your dashboard.</p>
+            </div>
+            <form onSubmit={submit} className="space-y-4">
+              <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="bg-card/60 backdrop-blur-xl border-primary/30" /></div>
+              <div><Label>Password</Label><Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="bg-card/60 backdrop-blur-xl border-primary/30" /></div>
+              <Button type="submit" disabled={loading} className="btn-luxury w-full h-11 text-base font-black">{loading ? "Signing in..." : "Sign in"}</Button>
+            </form>
+            <div className="mt-6 flex items-center justify-between text-sm">
+              <Link to="/forgot-password" className="text-muted-foreground hover:text-primary hover:underline">Forgot password?</Link>
+              <span className="text-muted-foreground">
+                New here? <Link to="/register" className="text-primary font-bold hover:underline">Open an account</Link>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </Layout>
   );
