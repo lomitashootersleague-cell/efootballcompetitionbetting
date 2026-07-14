@@ -72,22 +72,31 @@ export function BracketBoard({ tournamentId, currentStage }: { tournamentId: str
             );
           })}
         </div>
-        {/* Tree grid: 4 round columns, matches stacked with connectors */}
-        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}>
+        {/* Tree grid — each round's matches stack vertically and draw L-shaped connectors that meet siblings at the midpoint into the next round. */}
+        <div className="grid gap-0" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}>
           {STAGES.map((s, colIdx) => {
             const rows = matches.filter((m) => m.round_name === s.name).sort((a, b) => a.slot - b.slot);
             const count = slotCounts[colIdx];
             const isLast = colIdx === STAGES.length - 1;
+            const isFirst = colIdx === 0;
             return (
-              <div key={s.name} className="flex flex-col justify-around gap-3 relative">
+              <div key={s.name} className="flex flex-col justify-around relative px-3">
                 {Array.from({ length: count }).map((_, idx) => {
                   const m = rows[idx];
                   const isFinal = s.name === "F";
+                  const isTopOfPair = idx % 2 === 0;
                   return (
                     <div
                       key={m?.id ?? `${s.name}-${idx}`}
                       className="relative flex-1 flex items-center"
                     >
+                      {/* incoming stub from previous round */}
+                      {!isFirst && (
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute left-0 top-1/2 h-px w-3 bg-primary/40"
+                        />
+                      )}
                       <div className="w-full">
                         {m ? (
                           <BracketCard m={m} teams={teams} isFinal={isFinal} />
@@ -96,18 +105,24 @@ export function BracketBoard({ tournamentId, currentStage }: { tournamentId: str
                             TBD
                           </div>
                         )}
-                        {/* Connector to next round */}
-                        {!isLast && (
+                      </div>
+                      {/* outgoing connector to next round */}
+                      {!isLast && (
+                        <>
+                          {/* horizontal stub from card center to the vertical joiner */}
                           <span
                             aria-hidden
-                            className={`pointer-events-none absolute top-1/2 -right-3 h-1/2 w-3 border-primary/40 ${
-                              idx % 2 === 0
-                                ? "border-t border-r rounded-tr-md -translate-y-full"
-                                : "border-b border-r rounded-br-md"
+                            className="pointer-events-none absolute right-0 top-1/2 h-px w-3 bg-primary/40"
+                          />
+                          {/* vertical joiner: top-of-pair goes DOWN from center to bottom, bottom-of-pair goes UP from top to center */}
+                          <span
+                            aria-hidden
+                            className={`pointer-events-none absolute right-0 w-px bg-primary/40 ${
+                              isTopOfPair ? "top-1/2 bottom-0" : "top-0 bottom-1/2"
                             }`}
                           />
-                        )}
-                      </div>
+                        </>
+                      )}
                     </div>
                   );
                 })}
