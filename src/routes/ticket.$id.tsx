@@ -80,7 +80,7 @@ function TicketPage() {
     const { data, error } = await supabase
       .from("bets")
       .select(
-        "*, bet_selections(*, matches!match_id(id, name, status, start_time, home_score, away_score, is_virtual, match_kind, home_team:teams!home_team_id(name,logo_url), away_team:teams!away_team_id(name,logo_url)), markets!market_id(name), odds!odd_id(future_status,future_next_title,future_next_at,future_progress,future_emblem_url,future_candidate_type))",
+        "*, bet_selections(*, matches!match_id(id, name, status, start_time, settled_at, home_score, away_score, is_virtual, match_kind, home_team:teams!home_team_id(name,logo_url), away_team:teams!away_team_id(name,logo_url)), markets!market_id(name), odds!odd_id(is_winner,future_status,future_next_title,future_next_at,future_progress,future_emblem_url,future_candidate_type))",
       )
       .eq("id", id)
       .maybeSingle();
@@ -202,7 +202,13 @@ export function BetVoucher({
       if (["disqualified", "eliminated", "settled_lost"].includes(s.odds?.future_status)) return "lost";
       return "pending";
     }
-    if (!m || m.status !== "ended") return "pending";
+    // Never mark a selection as LOST until the backend has actually settled the
+    // match. Previously we compared against home/away scores as soon as
+    // status flipped to "ended", which briefly displayed winning
+    // Correct-Score picks as LOST while settlement was still running.
+    if (!m) return "pending";
+    if (s.odds?.is_winner === true) return "won";
+    if (!m.settled_at) return "pending";
     if (s.markets?.name === "Correct Score")
       return s.selection_label === `${m.home_score}-${m.away_score}` ? "won" : "lost";
     const lead =

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RiskPanel, PnLPanel, ReferralsAdminPanel, EmblemModerationPanel, VipAdminPanel, StreakAndPushPanel, TokenRulesPanel, BroadcastPanel, ActivityPanel, ReportsPanel, AdminAILivePanel } from "@/components/admin/AdminExtensions";
 import { VirtualAdminPanel } from "@/components/admin/VirtualAdminPanel";
+import { ChampionshipAdminPanel } from "@/components/admin/ChampionshipAdminPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
@@ -193,6 +194,7 @@ export function AdminPage() {
             <TabsContent value="users" className="mt-4"><UsersPanel /></TabsContent>
             <TabsContent value="bannedusers" className="mt-4"><BannedUsersPanel /></TabsContent>
             <TabsContent value="virtual" className="mt-4"><VirtualAdminPanel /></TabsContent>
+            <TabsContent value="championship" className="mt-4"><ChampionshipAdminPanel /></TabsContent>
             <TabsContent value="matches" className="mt-4"><MatchesPanel /></TabsContent>
             <TabsContent value="futures" className="mt-4"><FuturesAdminPanel /></TabsContent>
             <TabsContent value="events" className="mt-4"><EventsPanel /></TabsContent>
@@ -1278,18 +1280,19 @@ function MatchesPanel() {
   }
 
   async function clearEnded() {
-    const endedCount = matches.filter((m) => m.status === "ended").length;
-    if (endedCount === 0) { toast.info("No ended matches to clear."); return; }
+    const clearable = matches.filter((m) => m.status === "ended" || m.status === "cancelled");
+    const endedCount = clearable.length;
+    if (endedCount === 0) { toast.info("No ended or cancelled matches to clear."); return; }
     if (!await confirm({
-      title: `Clear ${endedCount} ended match${endedCount === 1 ? "" : "es"}?`,
-      description: "All matches with status 'ended' will be archived from the panel so you can create new ones. User bet vouchers and history stay intact — only the match listing here is cleared.",
-      tone: "danger", confirmText: "Clear ended matches",
+      title: `Clear ${endedCount} match${endedCount === 1 ? "" : "es"}?`,
+      description: "All matches with status 'ended' or 'cancelled' will be archived from the panel so you can create new ones. User bet vouchers and history stay intact — only the match listing here is cleared.",
+      tone: "danger", confirmText: "Clear ended & cancelled",
     })) return;
     const { data: archived, error } = await supabase
-      .from("matches").update({ is_archived: true }).eq("is_archived", false).eq("status", "ended").select("id");
+      .from("matches").update({ is_archived: true }).eq("is_archived", false).in("status", ["ended", "cancelled"]).select("id");
     if (error) { toast.error(error.message); return; }
     await logAudit("matches_bulk_archive_ended", "matches", undefined, { count: archived?.length ?? 0, match_ids: (archived ?? []).map((m: any) => m.id) });
-    toast.success(`Archived ${archived?.length ?? 0} ended match${archived?.length === 1 ? "" : "es"}`);
+    toast.success(`Archived ${archived?.length ?? 0} match${archived?.length === 1 ? "" : "es"} (ended + cancelled)`);
     load();
   }
 
@@ -1307,9 +1310,9 @@ function MatchesPanel() {
         <Button className="btn-luxury" onClick={() => setShooterWizard(true)}><Crosshair className="h-4 w-4 mr-1" />New Shooter Match</Button>
         <Button className="btn-luxury" onClick={() => window.dispatchEvent(new CustomEvent("admin:set-tab", { detail: "futures" }))}><Target className="h-4 w-4 mr-1" />New Tournament Futures</Button>
         <Button variant="destructive" onClick={clearEnded}>
-          <Trash2 className="h-4 w-4 mr-1" />Clear Ended Matches
+          <Trash2 className="h-4 w-4 mr-1" />Clear Ended & Cancelled
         </Button>
-        <Badge variant="outline" className="ml-auto text-[10px]">Bet history is preserved — only the panel list is cleared.</Badge>
+        <Badge variant="outline" className="ml-auto text-[10px]">Wipes both ended and cancelled matches. Bet history preserved.</Badge>
       </div>
       {wizard && <MatchWizard onClose={() => { setWizard(false); load(); }} />}
       {shooterWizard && <ShooterMatchWizard onClose={() => { setShooterWizard(false); load(); }} />}
@@ -3388,6 +3391,7 @@ const QUICK_ACTIONS: { i: any; l: string; t: string }[] = [
   { i: Newspaper, l: "News", t: "news" },
   { i: ListOrdered, l: "Leaderboard", t: "leaderboard" },
   { i: Trophy, l: "Matches", t: "matches" },
+  { i: Trophy, l: "Championship", t: "championship" },
   { i: Send, l: "Notify", t: "notify" },
   { i: BarChart3, l: "P&L", t: "pnl" },
   { i: Tag, l: "Promo Codes", t: "promos" },

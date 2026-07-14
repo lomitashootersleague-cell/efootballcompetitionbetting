@@ -43,7 +43,9 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VirtualInstantRouteImport } from './routes/virtual.instant'
 import { Route as VirtualHistoryRouteImport } from './routes/virtual.history'
+import { Route as VirtualChampionshipRouteImport } from './routes/virtual.championship'
 import { Route as TicketIdRouteImport } from './routes/ticket.$id'
 import { Route as MatchesMatchIdRouteImport } from './routes/matches.$matchId'
 import { Route as ApiPublicVirtualTickRouteImport } from './routes/api/public/virtual-tick'
@@ -221,9 +223,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VirtualInstantRoute = VirtualInstantRouteImport.update({
+  id: '/instant',
+  path: '/instant',
+  getParentRoute: () => VirtualRoute,
+} as any)
 const VirtualHistoryRoute = VirtualHistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => VirtualRoute,
+} as any)
+const VirtualChampionshipRoute = VirtualChampionshipRouteImport.update({
+  id: '/championship',
+  path: '/championship',
   getParentRoute: () => VirtualRoute,
 } as any)
 const TicketIdRoute = TicketIdRouteImport.update({
@@ -296,7 +308,9 @@ export interface FileRoutesByFullPath {
   '/withdraw': typeof WithdrawRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
+  '/virtual/championship': typeof VirtualChampionshipRoute
   '/virtual/history': typeof VirtualHistoryRoute
+  '/virtual/instant': typeof VirtualInstantRoute
   '/api/public/virtual-tick': typeof ApiPublicVirtualTickRoute
   '/api/public/hooks/broadcast-push': typeof ApiPublicHooksBroadcastPushRoute
   '/api/public/hooks/process-scheduled-push': typeof ApiPublicHooksProcessScheduledPushRoute
@@ -339,7 +353,9 @@ export interface FileRoutesByTo {
   '/withdraw': typeof WithdrawRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
+  '/virtual/championship': typeof VirtualChampionshipRoute
   '/virtual/history': typeof VirtualHistoryRoute
+  '/virtual/instant': typeof VirtualInstantRoute
   '/api/public/virtual-tick': typeof ApiPublicVirtualTickRoute
   '/api/public/hooks/broadcast-push': typeof ApiPublicHooksBroadcastPushRoute
   '/api/public/hooks/process-scheduled-push': typeof ApiPublicHooksProcessScheduledPushRoute
@@ -383,7 +399,9 @@ export interface FileRoutesById {
   '/withdraw': typeof WithdrawRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
+  '/virtual/championship': typeof VirtualChampionshipRoute
   '/virtual/history': typeof VirtualHistoryRoute
+  '/virtual/instant': typeof VirtualInstantRoute
   '/api/public/virtual-tick': typeof ApiPublicVirtualTickRoute
   '/api/public/hooks/broadcast-push': typeof ApiPublicHooksBroadcastPushRoute
   '/api/public/hooks/process-scheduled-push': typeof ApiPublicHooksProcessScheduledPushRoute
@@ -428,7 +446,9 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/matches/$matchId'
     | '/ticket/$id'
+    | '/virtual/championship'
     | '/virtual/history'
+    | '/virtual/instant'
     | '/api/public/virtual-tick'
     | '/api/public/hooks/broadcast-push'
     | '/api/public/hooks/process-scheduled-push'
@@ -471,7 +491,9 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/matches/$matchId'
     | '/ticket/$id'
+    | '/virtual/championship'
     | '/virtual/history'
+    | '/virtual/instant'
     | '/api/public/virtual-tick'
     | '/api/public/hooks/broadcast-push'
     | '/api/public/hooks/process-scheduled-push'
@@ -514,7 +536,9 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/matches/$matchId'
     | '/ticket/$id'
+    | '/virtual/championship'
     | '/virtual/history'
+    | '/virtual/instant'
     | '/api/public/virtual-tick'
     | '/api/public/hooks/broadcast-push'
     | '/api/public/hooks/process-scheduled-push'
@@ -803,11 +827,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/virtual/instant': {
+      id: '/virtual/instant'
+      path: '/instant'
+      fullPath: '/virtual/instant'
+      preLoaderRoute: typeof VirtualInstantRouteImport
+      parentRoute: typeof VirtualRoute
+    }
     '/virtual/history': {
       id: '/virtual/history'
       path: '/history'
       fullPath: '/virtual/history'
       preLoaderRoute: typeof VirtualHistoryRouteImport
+      parentRoute: typeof VirtualRoute
+    }
+    '/virtual/championship': {
+      id: '/virtual/championship'
+      path: '/championship'
+      fullPath: '/virtual/championship'
+      preLoaderRoute: typeof VirtualChampionshipRouteImport
       parentRoute: typeof VirtualRoute
     }
     '/ticket/$id': {
@@ -867,11 +905,15 @@ const MatchesRouteWithChildren =
   MatchesRoute._addFileChildren(MatchesRouteChildren)
 
 interface VirtualRouteChildren {
+  VirtualChampionshipRoute: typeof VirtualChampionshipRoute
   VirtualHistoryRoute: typeof VirtualHistoryRoute
+  VirtualInstantRoute: typeof VirtualInstantRoute
 }
 
 const VirtualRouteChildren: VirtualRouteChildren = {
+  VirtualChampionshipRoute: VirtualChampionshipRoute,
   VirtualHistoryRoute: VirtualHistoryRoute,
+  VirtualInstantRoute: VirtualInstantRoute,
 }
 
 const VirtualRouteWithChildren =
