@@ -78,7 +78,7 @@ function LoginPage() {
         {/* LEFT — cinematic gangster panel */}
         <div className="relative hidden md:block overflow-hidden">
           <img
-            src={brandingHero || gangsterAsset.url}
+            src={brandingHero || authHero}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
             loading="eager"
