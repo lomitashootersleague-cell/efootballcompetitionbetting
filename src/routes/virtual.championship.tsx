@@ -34,6 +34,8 @@ function ChampionshipPage() {
   useEffect(() => {
     const load = async () => {
       const sb = supabase as any;
+      // Heartbeat: advance the engine if a stage is due (RPC is idempotent and no-op when not due).
+      sb.rpc("championship_tick").catch(() => {});
       const { data: s } = await sb.from("app_settings").select("virtual_championship_enabled").eq("id", 1).maybeSingle();
       setEnabled(!!s?.virtual_championship_enabled);
       const { data: t } = await sb
