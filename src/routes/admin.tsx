@@ -1418,7 +1418,7 @@ async function settleFutureBets(matchId: string, winningOddIds: string[], winnin
   const { data: sels } = await supabase.from("bet_selections").select("*").eq("match_id", matchId);
   if (!sels || sels.length === 0) return;
   for (const s of sels) {
-    await supabase.from("bet_selections").update({ result: winningOddIds.includes(s.odd_id) ? "won" : "lost" }).eq("id", s.id);
+    await supabase.from("bet_selections").update({ result: s.odd_id && winningOddIds.includes(s.odd_id) ? "won" : "lost" }).eq("id", s.id);
   }
   const betIds = Array.from(new Set(sels.map((s: any) => s.bet_id)));
   for (const bid of betIds) {
@@ -4126,7 +4126,11 @@ function BetTrackerPanel() {
     let qb = supabase.from("bets")
       .select("*, profiles!user_id(full_name,email,ingame_name), bet_selections(*, matches!match_id(name))")
       .order("created_at", { ascending: false }).limit(200);
-    if (filter !== "all") qb = qb.eq("status", filter as any);
+    if (filter === "virtual") qb = qb.eq("is_virtual", true);
+    else if (filter === "real") qb = qb.eq("is_virtual", false);
+    else if (filter === "championship") qb = qb.eq("kind", "championship");
+    else if (filter === "football_instant") qb = qb.eq("kind", "virtual_football_instant");
+    else if (filter !== "all") qb = qb.eq("status", filter as any);
     const { data } = await qb;
     setBets(data ?? []);
     setSelectedBets(new Set());
@@ -4218,7 +4222,7 @@ function BetTrackerPanel() {
         <Select value={filter} onValueChange={setFilter}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
-            {["all","open","won","lost","suspended","refunded","cashed_out","void"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            {["all","virtual","real","championship","football_instant","open","won","lost","suspended","refunded","cashed_out","void"].map((s) => <SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>)}
           </SelectContent>
         </Select>
       </Card>

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, Trophy, Loader2, CircleDot } from "lucide-react";
+import { ArrowLeft, Trophy, Loader2, CircleDot, Ticket } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { TeamLogo } from "@/components/TeamLogo";
 
@@ -18,7 +18,7 @@ import { TeamLogo } from "@/components/TeamLogo";
 // private shootout for that user only — no global countdown, no shared round.
 
 type FbTeam = { id: string; name: string; logo_url: string | null };
-type KickResult = { home_kicks: boolean[]; away_kicks: boolean[]; home_score: number; away_score: number; result: "won"|"lost"; payout: number };
+type KickResult = { home_kicks: boolean[]; away_kicks: boolean[]; home_score: number; away_score: number; result: "won"|"lost"; payout: number; bet_id?: string; tracking_id?: string };
 
 export const Route = createFileRoute("/virtual/football-instant")({
   head: () => ({
@@ -182,6 +182,12 @@ function FootballInstantPage() {
                     return lines.map((l, i) => <div key={i} className="text-muted-foreground">· {l}</div>);
                   })()}
                 </div>
+              )}
+
+              {result?.bet_id && (
+                <Link to="/ticket/$id" params={{ id: result.bet_id }}>
+                  <Button variant="outline" className="w-full gap-2"><Ticket className="h-4 w-4"/>View bet voucher {result.tracking_id ? `· ${result.tracking_id}` : ""}</Button>
+                </Link>
               )}
 
               <div className="flex justify-center pt-2">

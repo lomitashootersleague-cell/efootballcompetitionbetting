@@ -1,80 +1,36 @@
-## Championship Flow Rework — Booking Window + Live Play-by-Play
+## Issues to fix
 
-### 1. Database (single migration)
+### 1) Logos can't be changed
+The admin uploads to the `ads` storage bucket, which requires the moderator/admin role via storage RLS. All screenshots show the account is Super Admin, so upload itself should work. Need concrete failure info to fix without guessing.
 
-**`app_settings` — new championship timing knobs**
-- `championship_booking_seconds` (int, default 120) — pre-tournament selection window
-- `championship_stage_gap_seconds` (int, default 20) — pause between stages (already exists per-tournament, promote to global default)
-- `championship_stage_live_seconds` (int, default 30) — how long each stage's "live play" runs before results resolve
+Ask: does the upload button spin forever, does a toast error appear (validation? "Only admins…"? bucket error?), or does the image preview appear but Save doesn't persist? Please try uploading a small square PNG and paste the exact toast text.
 
-**`tournaments` — new columns**
-- `booking_closes_at timestamptz` — when booking window ends
-- `stage_live_seconds int` — inherited from settings at draw time
-- `current_stage_live_ends_at timestamptz` — when the currently-live stage finishes play
+### 2) "Canceling statement due to statement timeout" on bulk delete
+`delete_teams_bulk` runs 6 large cascading DELETEs in a single statement with sub-selects across matches → markets → odds → bet_selections. On 55 rows this trips the 60s cap.
 
-**`tournament_matches` — new columns**
-- `live_started_at timestamptz`
-- `live_events jsonb default '[]'` — array of `{ at, minute, type, text }` for football commentary (goal, chance, save, card, kick-off, HT, FT); virtual variant uses generic phrasing
+Fix (single migration):
+- Rewrite `delete_teams_bulk` to first collect target match/market IDs into temp arrays, then delete in the correct order using those arrays (no repeated JOINs).
+- Add supporting indexes: `matches(home_team_id)`, `matches(away_team_id)`, `markets(match_id)`, `odds(market_id)`, `bet_selections(match_id)`, `players(team_id)`, `tournament_matches(participant_a_id, participant_b_id)`.
+- Same treatment for `delete_players_bulk`.
 
-**`championship_start` RPC** — schedule-only:
-- If called on `status='scheduled'` and `starts_at` is future → set `status='booking'`, `booking_closes_at = starts_at`, draw R16 pairings (so users see the bracket to bet on) but leave `status='booking'` until `booking_closes_at`
-- If already past `starts_at` → skip booking, go straight to live
+### 3) No voucher for Instant E-Football, Championship, Instant Championship Football
+These modes bypass the standard `bets` table:
+- Instant E-Football writes to `user_virtual_rounds` (via `start_user_virtual_round`) — no `bets` row → no `/ticket/:id` voucher.
+- Championship writes to `championship_bets` (via `place_championship_bet`) — same problem.
 
-**New RPC `championship_tick(p_tournament uuid)`** replaces current tick:
-1. `booking` → when `now() >= booking_closes_at`: set `status='live'`, `current_stage='R16'`, for each R16 match set `live_started_at = now()`, `current_stage_live_ends_at = now() + stage_live_seconds`, emit "Kick-off" events per match.
-2. `live` + stage still playing (`now() < current_stage_live_ends_at`) → append random football/virtual commentary events (goal/chance/save/card) to each unfinished match's `live_events`, adjust scores on goals.
-3. `live` + stage ended → finalize scores, set `winner_id`, status='completed' for each stage match, emit "Full time" event, then wait `stage_gap_seconds`: schedule `next_stage_starts_at`. When gap elapses, draw next round pairings, emit "Next round line-up" event to `broadcasts`/`live_events` on new matches, set new `current_stage_live_ends_at`.
-4. Final completed → mark tournament completed; auto-restart honors existing flag.
+Fix:
+- Modify `start_user_virtual_round` to ALSO insert a `bets` row (status auto-settled won/lost, potential_payout=payout, single-selection bet_selection with the picked side). Return the bet id.
+- Modify `place_championship_bet` (and `cancel_championship_bet`) to insert/delete a paired `bets` row with a "future" championship selection so the user gets a real ticket voucher visible in Bet History and admin Bet Tracker.
+- Both bets flagged `is_virtual = true` so they show up under the new admin filter.
 
-**`bets` guard** — DB trigger rejects championship bets when tournament `status != 'booking'`; enforces "once per championship" via unique index on `(user_id, tournament_id)` in `championship_bets` (or add `tournament_id` if missing and unique-index it).
+### 4) Admin Bet Tracker — add "Virtual" filter
+- Extend the `filter` select in `BetTrackerPanel` with `virtual` (all is_virtual=true) and `real` options, and change the query to filter by `is_virtual` when those are picked.
 
-### 2. Server tick loop
+## Files touched
+- `supabase/migrations/<new>.sql` — bulk delete rewrite + indexes; RPC updates for virtual+championship writing into `bets`.
+- `src/routes/admin.tsx` — Bet Tracker filter additions.
+- `src/routes/virtual.football-instant.tsx` — after `start_user_virtual_round` returns a bet_id, link to `/ticket/:id` from the result card.
+- `src/components/ChampionshipBetPanel.tsx` — show "View voucher" link after bet placed.
 
-The existing `/api/public/virtual-tick` route (or equivalent) already calls per-tournament tick. Extend to:
-- Fetch all tournaments in `booking` or `live` status
-- Call `championship_tick` for each every 2s
-
-### 3. Frontend — `virtual.championship.tsx` + `virtual.football-championship.tsx`
-
-Reorder page:
-1. Header + status pill (BOOKING / LIVE stage / GAP)
-2. **Countdown**:
-   - `booking` → "Booking closes in mm:ss" (uses `booking_closes_at`)
-   - `live` → "Stage ends in mm:ss" (uses `current_stage_live_ends_at`)
-   - gap → "Next stage in mm:ss"
-3. **Live feed** (moved up) — realtime stream of `live_events` for currently-live matches, plus "Next round line-up" cards when a stage completes showing the drawn matchups for the upcoming stage.
-4. **Bracket** — standard bracket underneath the feed (existing component).
-5. **Championship Markets** — disabled unless `status='booking'`; shows "Booking closed" message otherwise. Enforces one bet per tournament client-side (query existing bet, hide slip).
-
-Rename BetSlip CTA from "Place bet" → "Stake bet" (already noted earlier).
-
-### 4. `ChampionshipLiveFeed` rewrite
-
-Subscribe to `tournament_matches` changes filtered by `tournament_id`. Render:
-- **Live now** section — currently-live matches with running score + last 3 events (goal 27', save 33', etc.)
-- **Just settled** — completed matches from the last stage with final score
-- **Next up** — when in gap, list the drawn pairings for the next stage
-Football variant uses soccer-flavoured event text; virtual variant uses generic ("SOLITUDE strikes!").
-
-### 5. Admin — `ChampionshipAdminPanel`
-
-Add three inputs (globally applied via `app_settings`):
-- Booking window (seconds) — default 120
-- Stage live duration (seconds) — default 30
-- Stage gap (seconds) — existing, keep
-
-Show these fields both in global settings block and as overrides when scheduling a specific tournament.
-
-### 6. Bet Slip
-
-Change primary CTA label from "Place bet" to "Stake bet" across `BetSlip.tsx` and `ChampionshipBetPanel.tsx` (already partly noted in prior turns).
-
-### Technical notes / risks
-- Adding `tournament_id` unique to `championship_bets` may conflict with existing rows if a tournament already has multiple bets per user — migration will `DELETE` duplicates keeping earliest (destructive; acceptable since test data).
-- Commentary generation lives inside `championship_tick` SQL (uses `random()` weighted picks). Keeps engine fully server-driven.
-- Existing `stage_gap_seconds` column stays; new fields are additive so existing tournaments keep working.
-
-### Out of scope
-- Real match physics/AI — commentary is randomized flavour text with scoreline drift.
-- Per-user booking windows — booking is global per tournament.
-- Redesign of Championship Markets tabs.
+## Open question
+Please provide the logo-upload failure symptom (toast text or blank behavior) so #1 can be fixed in the same batch. Everything else I'll ship as described.
