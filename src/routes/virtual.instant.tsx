@@ -254,7 +254,6 @@ function ShootoutStage({
 }) {
   const home = featured.home_team?.name ?? "Gang A";
   const away = featured.away_team?.name ?? "Gang B";
-  const cd = useCountdown(featured.lock_time);
   const live = phase === "live";
   const { h, a } = useLiveScore(featured, animSec);
 
