@@ -13,27 +13,7 @@ export const Route = createFileRoute("/leaderboard")({
       { title: "Leaderboard — E-Football Competition Bet" },
       {
         name: "description",
-        content:
-          "See the top shooters and top gangs ranked by total score, season points, wins, and tokens won across the E-Football Competition Bet.",
-      },
-      { property: "og:title", content: "ECB Leaderboard — Top Shooters & Gangs" },
-      {
-        property: "og:description",
-        content: "Top shooters and gangs ranked by total score, season points, wins, and tokens won.",
-      },
-      { property: "og:url", content: "https://lslonlinebetting.lovable.app/leaderboard" },
-    ],
-    links: [{ rel: "canonical", href: "https://lslonlinebetting.lovable.app/leaderboard" }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          name: "ECB Leaderboard",
-          description: "Top shooters and gangs in the E-Football Competition Bet.",
-          url: "https://lslonlinebetting.lovable.app/leaderboard",
-        }),
+        content: "See the top shooters and top teams ranked by total score, season points, wins, and tokens won.",
       },
     ],
   }),
@@ -60,13 +40,13 @@ function Medal({ i }: { i: number }) {
 
 function Page() {
   const [shooters, setShooters] = useState<LbRow[]>([]);
-  const [gangs, setGangs] = useState<LbRow[]>([]);
+  const [teams, setTeams] = useState<LbRow[]>([]);
   const [headerUrl, setHeaderUrl] = useState<string | null>(leaderboardHeaderAsset.url);
 
   useEffect(() => {
     const run = async () => {
-      const { gangs, shooters } = await loadStandings();
-      setGangs(gangs);
+      const { gangs: teamsData, shooters } = await loadStandings();
+      setTeams(teamsData);
       setShooters(shooters);
     };
     run();
@@ -128,16 +108,16 @@ function Page() {
           </div>
         )}
 
-        <Tabs defaultValue="gangs">
+        <Tabs defaultValue="teams">
           <TabsList className="bg-black/25 backdrop-blur-[2px] border border-amber-400/40">
-            <TabsTrigger value="teams">E-FOOTBALL</TabsTrigger>
+            <TabsTrigger value="teams">Top Team / Scorer</TabsTrigger>
             <TabsTrigger value="shooters">Top Shooters</TabsTrigger>
           </TabsList>
 
           <TabsContent value="teams" className="mt-4">
             <Board
-              rows={gangs}
-              firstCol="Team / Sccorer"
+              rows={teams}
+              firstCol="Team / Scorer"
               secondCol="Top Player"
               pick={(g) => g.top_player || "—"}
               emptyText="No data yet."
@@ -147,7 +127,7 @@ function Page() {
           <TabsContent value="shooters" className="mt-4">
             <Board
               rows={shooters}
-              firstCol="Gang & Faction"
+              firstCol="Team / Scorer"
               secondCol="Player"
               pick={(p) => p.name}
               firstPick={(p) => p.gang_faction || "—"}
